@@ -1,0 +1,1 @@
+# lets-hotfix-idea-plugin
