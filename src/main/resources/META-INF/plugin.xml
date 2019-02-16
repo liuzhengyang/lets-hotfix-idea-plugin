@@ -1,0 +1,41 @@
+<idea-plugin>
+    <id>com.github.lzy.lets-hotfix-idea-plugin</id>
+    <name>hotfix</name>
+    <vendor email="liuzhengyang75@gmail.com"
+            url="https://github.com/liuzhengyang/lets-hotfix-idea-plugin">liuzhengyang</vendor>
+
+    <description><![CDATA[
+    Java class file hot swap<br>
+    for https://github.com/liuzhengyang/lets-hotfix-idea-plugin
+    ]]></description>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <!--&lt;!&ndash; uncomment to enable plugin in all products-->
+    <depends>com.intellij.modules.lang</depends>
+    <!--&ndash;&gt;-->
+
+    <change-notes><![CDATA[
+        <b>Version 0.0.1</b>
+        <ul>
+            <li>Java class file hot swap for https://github.com/liuzhengyang/lets-hotfix-idea-plugin</li>
+        </ul>
+    ]]></change-notes>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationConfigurable groupId="tools"
+                                 instance="com.github.hotreload.config.HotReloadPluginConfig"/>
+    </extensions>
+
+    <actions>
+        <action id="hotReload" class="com.github.hotreload.action.HotReloadAction" text="Hot Reload"
+                description="Hot Reload">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
+            <add-to-group group-id="CodeMenu" anchor="first"/>
+            <keyboard-shortcut first-keystroke="control shift l" keymap="$default"/>
+            <keyboard-shortcut first-keystroke="control shift l" keymap="Mac OS X 10.5+"/>
+            <keyboard-shortcut first-keystroke="control shift l" keymap="Mac OS X"/>
+        </action>
+    </actions>
+</idea-plugin>
