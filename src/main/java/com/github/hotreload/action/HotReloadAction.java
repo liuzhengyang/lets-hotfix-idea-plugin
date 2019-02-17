@@ -2,14 +2,20 @@ package com.github.hotreload.action;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import com.github.hotreload.config.ApplicationConfig;
 import com.github.hotreload.config.HotReloadPluginComponent;
+import com.github.hotreload.config.HotReloadPluginConfig;
 import com.github.hotreload.http.HotReloadHttpService;
 import com.github.hotreload.http.model.HotReloadResult;
 import com.intellij.ide.util.JavaAnonymousClassesHelper;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -23,8 +29,10 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
+import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.CompilerModuleExtension;
+import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiAnonymousClass;
@@ -54,6 +62,14 @@ public class HotReloadAction extends AnAction {
         if (project == null || virtualFile == null) {
             return;
         }
+    
+        ApplicationConfig applicationConfig = HotReloadPluginComponent.getApplicationConfig();
+        if (StringUtils.isEmpty(applicationConfig.getServer())
+                || StringUtils.isEmpty(applicationConfig.getPid())) {
+            ShowSettingsUtil.getInstance().showSettingsDialog(project, HotReloadPluginConfig.class);
+            return;
+        }
+        
         PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
         if (psiFile instanceof PsiClassOwner) {
             Module module = ModuleUtilCore.findModuleForPsiElement(psiFile);
@@ -198,12 +214,28 @@ public class HotReloadAction extends AnAction {
                     hotReloadHttpService.reloadClass(classFile, targetPid);
             HotReloadResult hotReloadResult = hotReloadResultCall.execute().body();
             log("Result " + hotReloadResult);
+            notifySuccess();
         } catch (IOException e) {
+            notifyFailed(e.getMessage());
             e.printStackTrace();
         }
     }
 
     private void log(String message) {
         System.out.println(message);
+    }
+    
+    private void notifySuccess() {
+        notify("Hotfix success.", "", NotificationType.INFORMATION);
+    }
+    
+    private void notifyFailed(String message) {
+        notify("Hotfix error: ", message, NotificationType.ERROR);
+    }
+    
+    private void notify(String title, String message, NotificationType type) {
+        Notification notification = new Notification("hotfix", title, message, type);
+        Notifications.Bus.notify(notification);
+        Optional.ofNullable(notification.getBalloon()).ifPresent(Balloon::hide);
     }
 }
