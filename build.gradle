@@ -22,8 +22,9 @@ dependencies {
 }
 
 intellij {
-    version '2017.1.1'
+    version '2018.3.4'
 }
+
 patchPluginXml {
     changeNotes """
       Add change notes here.<br>
