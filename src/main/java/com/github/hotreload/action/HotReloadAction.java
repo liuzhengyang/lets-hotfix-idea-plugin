@@ -30,6 +30,9 @@ import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.options.ShowSettingsUtil;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.ui.popup.Balloon;
@@ -182,7 +185,12 @@ public class HotReloadAction extends AnAction {
         Application application = ApplicationManager.getApplication();
         application.invokeLater(() -> {
             file.refresh(false, false, () -> { //
-                uploadAndReloadClass(file);
+                ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading Class") {
+                    @Override
+                    public void run(@NotNull ProgressIndicator indicator) {
+                        uploadAndReloadClass(file);
+                    }
+                });
             });
         });
     }
@@ -198,7 +206,6 @@ public class HotReloadAction extends AnAction {
                 .baseUrl(server)
                 .addConverterFactory(JacksonConverterFactory.create())
                 .build();
-
 
         HotReloadHttpService hotReloadHttpService = retrofit.create(HotReloadHttpService.class);
         try {
