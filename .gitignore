@@ -4,3 +4,7 @@ build/
 *.iml
 out/
 gradle.properties
+gradlew
+gradlew.bat
+gradle/
+
