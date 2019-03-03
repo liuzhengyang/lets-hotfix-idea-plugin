@@ -5,32 +5,34 @@ import javax.swing.JComponent;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
+import com.github.hotreload.component.SettingPanel;
+import com.github.hotreload.component.SettingStorage;
 import com.intellij.openapi.options.Configurable;
-import com.intellij.openapi.options.ConfigurationException;
 
 /**
  * @author liuzhengyang
  */
-public class HotReloadPluginConfig implements Configurable {
+public class PluginConfig implements Configurable {
 
-    private HotReloadConfiguration hotReloadConfiguration;
+    private SettingPanel hotReloadConfiguration;
     private ApplicationConfig applicationConfig;
 
-    public HotReloadPluginConfig() {
-        this.applicationConfig = HotReloadPluginComponent.getApplicationConfig();
+    public PluginConfig() {
+        this.applicationConfig = SettingStorage.getApplicationConfig();
     }
 
     @Nls(capitalization = Nls.Capitalization.Title)
     @Override
     public String getDisplayName() {
-        return "hotReloadConfig";
+        return "HotReloadConfig";
     }
 
     @Nullable
     @Override
     public JComponent createComponent() {
         if (hotReloadConfiguration == null) {
-            hotReloadConfiguration = new HotReloadConfiguration();
+            hotReloadConfiguration = new SettingPanel();
+            hotReloadConfiguration.initComponent();
         }
         return hotReloadConfiguration.getRootPanel();
     }
@@ -41,7 +43,7 @@ public class HotReloadPluginConfig implements Configurable {
     }
 
     @Override
-    public void apply() throws ConfigurationException {
+    public void apply() {
         if (hotReloadConfiguration != null) {
             hotReloadConfiguration.getData(applicationConfig);
         }
