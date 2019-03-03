@@ -1,21 +1,29 @@
 package com.github.hotreload.action;
 
+import static com.github.hotreload.model.Result.SUCCESS_CODE;
+import static com.github.hotreload.utils.Constants.NEED_SELECT_JVM_PROCESS;
+import static com.github.hotreload.utils.ReloadUtil.filterProcess;
+import static com.github.hotreload.utils.ReloadUtil.getProcessList;
+import static com.github.hotreload.utils.ReloadUtil.notifyFailed;
+import static com.github.hotreload.utils.ReloadUtil.notifySuccess;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Optional;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import com.github.hotreload.component.SettingStorage;
 import com.github.hotreload.config.ApplicationConfig;
-import com.github.hotreload.config.HotReloadPluginComponent;
-import com.github.hotreload.config.HotReloadPluginConfig;
-import com.github.hotreload.http.HotReloadHttpService;
-import com.github.hotreload.http.model.HotReloadResult;
+import com.github.hotreload.config.PluginConfig;
+import com.github.hotreload.http.HttpService;
+import com.github.hotreload.http.HttpServiceFactory;
+import com.github.hotreload.model.HotfixResult;
+import com.github.hotreload.model.JvmProcess;
+import com.github.hotreload.model.Result;
 import com.intellij.ide.util.JavaAnonymousClassesHelper;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -32,10 +40,9 @@ import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.progress.Task.Backgroundable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.CompilerModuleExtension;
-import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiAnonymousClass;
@@ -50,13 +57,13 @@ import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
-import retrofit2.Retrofit;
-import retrofit2.converter.jackson.JacksonConverterFactory;
 
 /**
  * @author liuzhengyang
  */
 public class HotReloadAction extends AnAction {
+
+    private static final String NEED_SELECT_PROCESS = "Need select process";
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
@@ -65,14 +72,13 @@ public class HotReloadAction extends AnAction {
         if (project == null || virtualFile == null) {
             return;
         }
-    
-        ApplicationConfig applicationConfig = HotReloadPluginComponent.getApplicationConfig();
-        if (StringUtils.isEmpty(applicationConfig.getServer())
-                || StringUtils.isEmpty(applicationConfig.getPid())) {
-            ShowSettingsUtil.getInstance().showSettingsDialog(project, HotReloadPluginConfig.class);
+
+        ApplicationConfig applicationConfig = SettingStorage.getApplicationConfig();
+        if (StringUtils.isEmpty(applicationConfig.getServer())) {
+            ShowSettingsUtil.getInstance().showSettingsDialog(project, PluginConfig.class);
             return;
         }
-        
+
         PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
         if (psiFile instanceof PsiClassOwner) {
             Module module = ModuleUtilCore.findModuleForPsiElement(psiFile);
@@ -117,8 +123,10 @@ public class HotReloadAction extends AnAction {
             @Override
             public VirtualFile compute() {
                 if (outputDirectories != null && psiFile instanceof PsiClassOwner) {
-                    FileEditor editor = FileEditorManager.getInstance(psiFile.getProject()).getSelectedEditor(psiFile.getVirtualFile());
-                    int caretOffset = editor == null ? -1 : ((TextEditor) editor).getEditor().getCaretModel().getOffset();
+                    FileEditor editor = FileEditorManager.getInstance(psiFile.getProject())
+                            .getSelectedEditor(psiFile.getVirtualFile());
+                    int caretOffset = editor == null ? -1 : ((TextEditor) editor).getEditor().getCaretModel()
+                            .getOffset();
                     if (caretOffset >= 0) {
                         PsiElement psiElement = psiFile.findElementAt(caretOffset);
                         PsiClass classAtCaret = findClassAtCaret(psiElement);
@@ -143,9 +151,10 @@ public class HotReloadAction extends AnAction {
                     if (psiClass instanceof PsiAnonymousClass) {
                         PsiClass parentClass = PsiTreeUtil.getParentOfType(psiClass, PsiClass.class);
                         if (parentClass != null) {
-                            className = parentClass.getQualifiedName() + JavaAnonymousClassesHelper.getName((PsiAnonymousClass) psiClass);
+                            className = parentClass.getQualifiedName() + JavaAnonymousClassesHelper
+                                    .getName((PsiAnonymousClass) psiClass);
                         }
-                    } else if (psiClass instanceof PsiClass) {
+                    } else {
                         className = PsiTreeUtil.getParentOfType(psiClass, PsiClass.class).getQualifiedName();
                     }
                 }
@@ -183,66 +192,87 @@ public class HotReloadAction extends AnAction {
             return;
         }
         Application application = ApplicationManager.getApplication();
-        application.invokeLater(() -> {
-            file.refresh(false, false, () -> { //
-                ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading Class") {
-                    @Override
-                    public void run(@NotNull ProgressIndicator indicator) {
-                        uploadAndReloadClass(file);
-                    }
-                });
-            });
+        application.invokeLater(() -> file.refresh(false, false,
+                () -> startReloadTask(project, file)));
+    }
+
+    private void startReloadTask(Project project, VirtualFile file) {
+        ProgressManager.getInstance().run(new Backgroundable(project, "Uploading Class") {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                try {
+                    uploadAndReloadClass(project, file);
+                    notifySuccess();
+                } catch (Exception e) {
+                    notifyFailed(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
         });
     }
 
-    private void uploadAndReloadClass(final VirtualFile file) {
-        ApplicationConfig applicationConfig = HotReloadPluginComponent.getApplicationConfig();
-        String server = applicationConfig.getServer();
-        String pid = applicationConfig.getPid();
+    private void uploadAndReloadClass(final Project project, final VirtualFile file) throws Exception {
+        ApplicationConfig applicationConfig = SettingStorage.getApplicationConfig();
 
-        log("Server " + server + " pid " + pid);
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(server)
-                .addConverterFactory(JacksonConverterFactory.create())
-                .build();
-
-        HotReloadHttpService hotReloadHttpService = retrofit.create(HotReloadHttpService.class);
-        try {
-            RequestBody requestBody = RequestBody.create(MediaType.get("multipart/form-data"), file.contentsToByteArray());
-
-            MultipartBody.Part classFile =
-                    MultipartBody.Part.createFormData("file", file.getName(), requestBody);
-
-            RequestBody targetPid =
-                    RequestBody.create(MediaType.parse("multipart/form-data"), pid);
-
-            Call<HotReloadResult> hotReloadResultCall =
-                    hotReloadHttpService.reloadClass(classFile, targetPid);
-            HotReloadResult hotReloadResult = hotReloadResultCall.execute().body();
-            log("Result " + hotReloadResult);
-            notifySuccess();
-        } catch (IOException e) {
-            notifyFailed(e.getMessage());
-            e.printStackTrace();
+        if (applicationConfig.getSelectedProcess() == null) {
+            tryRefreshProcessList();
         }
+        if (applicationConfig.getSelectedProcess() == null) {
+            showDialogWithError(project, NEED_SELECT_PROCESS);
+        }
+        if (applicationConfig.getSelectedProcess().equals(NEED_SELECT_JVM_PROCESS)) {
+            showDialogWithError(project, NEED_SELECT_PROCESS);
+        }
+
+        String server = applicationConfig.getServer();
+        HttpServiceFactory.trySetServer(server);
+        String pid = applicationConfig.getSelectedProcess().getPid();
+        log("Server " + server + " pid " + pid);
+        Result<HotfixResult> result = doHotfix(pid, file);
+        checkNotNull(result);
+        if (result.getCode() == SUCCESS_CODE) {
+            return;
+        }
+        boolean success = tryRefreshProcessList();
+        if (!success) {
+            showDialogWithError(project, NEED_SELECT_PROCESS);
+        }
+        pid = applicationConfig.getSelectedProcess().getPid();
+        result = doHotfix(pid, file);
+        checkNotNull(result);
+        if (result.getCode() == SUCCESS_CODE) {
+            return;
+        }
+        throw new RuntimeException(result.getMsg());
+    }
+
+    private Result<HotfixResult> doHotfix(String pid, VirtualFile file) throws IOException {
+        HttpService httpService = HttpServiceFactory.getInstance();
+        RequestBody requestBody = RequestBody.create(MediaType.get("multipart/form-data"), file.contentsToByteArray());
+        MultipartBody.Part classFile = MultipartBody.Part.createFormData("file", file.getName(), requestBody);
+        RequestBody targetPid = RequestBody.create(MediaType.parse("multipart/form-data"), pid);
+        Call<Result<HotfixResult>> hotReloadResultCall = httpService.reloadClass(classFile, targetPid);
+        return hotReloadResultCall.execute().body();
+    }
+
+    private boolean tryRefreshProcessList() {
+        ApplicationConfig applicationConfig = SettingStorage.getApplicationConfig();
+        List<JvmProcess> processList = getProcessList(applicationConfig.getSelectedHostName());
+        List<JvmProcess> filteredProcessList = filterProcess(processList, applicationConfig.getKeywords());
+        if (filteredProcessList.size() != 1) {
+            return false;
+        }
+        applicationConfig.setSelectedProcess(filteredProcessList.get(0));
+        return true;
+    }
+
+    private void showDialogWithError(Project project, String errorMsg) {
+        ApplicationManager.getApplication().invokeLater(
+                () -> ShowSettingsUtil.getInstance().showSettingsDialog(project, PluginConfig.class));
+        throw new RuntimeException(errorMsg);
     }
 
     private void log(String message) {
         System.out.println(message);
-    }
-    
-    private void notifySuccess() {
-        notify("Hotfix success.", "", NotificationType.INFORMATION);
-    }
-    
-    private void notifyFailed(String message) {
-        notify("Hotfix error: ", message, NotificationType.ERROR);
-    }
-    
-    private void notify(String title, String message, NotificationType type) {
-        Notification notification = new Notification("hotfix", title, message, type);
-        Notifications.Bus.notify(notification);
-        Optional.ofNullable(notification.getBalloon()).ifPresent(Balloon::hide);
     }
 }

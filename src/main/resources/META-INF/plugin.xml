@@ -25,7 +25,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable groupId="tools"
-                                 instance="com.github.hotreload.config.HotReloadPluginConfig"/>
+                                 instance="com.github.hotreload.config.PluginConfig"/>
     </extensions>
 
     <actions>
