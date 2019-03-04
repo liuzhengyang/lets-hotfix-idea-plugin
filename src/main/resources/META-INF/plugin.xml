@@ -28,6 +28,12 @@
                                  instance="com.github.hotreload.config.PluginConfig"/>
     </extensions>
 
+    <project-components>
+        <component>
+            <implementation-class>com.github.hotreload.component.SettingStorage</implementation-class>
+        </component>
+    </project-components>
+
     <actions>
         <action id="hotReload" class="com.github.hotreload.action.HotReloadAction" text="Hot Reload"
                 description="Hot Reload">
