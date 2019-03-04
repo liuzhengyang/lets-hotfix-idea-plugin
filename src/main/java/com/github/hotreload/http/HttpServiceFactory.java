@@ -38,9 +38,16 @@ public class HttpServiceFactory {
             serverUrl = DEFAULT_PROTOCOL + serverUrl;
         }
         // todo: 如果域名不合法，DNS查找时间较长，后面看看怎么优化一下
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(false)
+                .build();
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(serverUrl)
                 .addConverterFactory(GsonConverterFactory.create())
+                .client(okHttpClient)
                 .build();
         httpService = retrofit.create(HttpService.class);
     }
