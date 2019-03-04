@@ -72,7 +72,7 @@ public class ReloadUtil {
             hostName = null;
         }
         if (hostName != null) {
-            hostName = DEFAULT_PROTOCOL + hostName + ":18086";
+            hostName = DEFAULT_PROTOCOL + hostName;
         }
         try {
             // TODO: replace port
