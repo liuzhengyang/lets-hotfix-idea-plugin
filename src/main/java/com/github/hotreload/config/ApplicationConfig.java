@@ -1,7 +1,7 @@
 package com.github.hotreload.config;
 
 import static com.github.hotreload.utils.ReloadUtil.joinKeywords;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 
 import java.util.List;
 

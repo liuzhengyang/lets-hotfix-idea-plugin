@@ -8,7 +8,7 @@ import static com.github.hotreload.utils.ReloadUtil.getProcessList;
 import static com.github.hotreload.utils.ReloadUtil.splitKeywordsText;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Collections.singletonList;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.awt.event.FocusEvent;
@@ -26,7 +26,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.github.hotreload.config.ApplicationConfig;
@@ -174,7 +174,7 @@ public class SettingPanel {
         }
         HttpServiceFactory.setServer(serverUrl);
         List<String> hosts = getHostList();
-        if (CollectionUtils.isEmpty(hosts)) {
+        if (isEmpty(hosts)) {
             hosts = singletonList(DEFAULT_HOST);
         }
         hostNameBox.removeAllItems();
@@ -199,7 +199,7 @@ public class SettingPanel {
             hasKeywords = true;
         }
         processBox.removeAllItems();
-        if (CollectionUtils.isEmpty(processes)) {
+        if (isEmpty(processes)) {
             return;
         }
         if (hasKeywords && processes.size() > 1) {
@@ -214,7 +214,7 @@ public class SettingPanel {
     }
 
     private void changeShownProcessList() {
-        if (CollectionUtils.isEmpty(currentProcessList)) {
+        if (isEmpty(currentProcessList)) {
             return;
         }
         String keywordText = keywordFiled.getText();
