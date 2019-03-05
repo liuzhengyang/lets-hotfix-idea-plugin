@@ -32,8 +32,8 @@ import com.intellij.openapi.ui.popup.Balloon;
  */
 public class ReloadUtil {
 
-    private static final Joiner KEYWORD_JOINER = Joiner.on(", ").skipNulls();
-    private static final Splitter KEYWORD_SPLITTER = Splitter.on(", ").trimResults();
+    private static final Joiner KEYWORD_JOINER = Joiner.on(",").skipNulls();
+    private static final Splitter KEYWORD_SPLITTER = Splitter.on(",").trimResults();
 
     private ReloadUtil() {
     }
