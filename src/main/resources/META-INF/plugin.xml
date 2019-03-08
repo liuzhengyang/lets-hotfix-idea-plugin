@@ -17,11 +17,12 @@
     <idea-version since-build="162.539.11"/>
 
     <change-notes><![CDATA[
-        <b>Version 0.0.1</b>
         <ul>
-            <li>Java class file hot swap for https://github.com/liuzhengyang/lets-hotfix-idea-plugin</li>
+            <li>Support proxy mode, input keyword to minimize usage effort</li>
         </ul>
     ]]></change-notes>
+
+    <version>0.0.2</version>
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable groupId="tools"
