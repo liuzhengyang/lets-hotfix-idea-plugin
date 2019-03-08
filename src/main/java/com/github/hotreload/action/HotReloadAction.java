@@ -227,8 +227,9 @@ public class HotReloadAction extends AnAction {
         String server = applicationConfig.getServer();
         HttpServiceFactory.trySetServer(server);
         String pid = applicationConfig.getSelectedProcess().getPid();
+        String hostName = applicationConfig.getSelectedHostName();
         log("Server " + server + " pid " + pid);
-        Result<HotfixResult> result = doHotfix(pid, file);
+        Result<HotfixResult> result = doHotfix(pid, file, hostName);
         checkNotNull(result);
         if (result.getCode() == SUCCESS_CODE) {
             return;
@@ -238,7 +239,7 @@ public class HotReloadAction extends AnAction {
             showDialogWithError(project, NEED_SELECT_PROCESS);
         }
         pid = applicationConfig.getSelectedProcess().getPid();
-        result = doHotfix(pid, file);
+        result = doHotfix(pid, file, hostName);
         checkNotNull(result);
         if (result.getCode() == SUCCESS_CODE) {
             return;
@@ -246,12 +247,13 @@ public class HotReloadAction extends AnAction {
         throw new RuntimeException(result.getMsg());
     }
 
-    private Result<HotfixResult> doHotfix(String pid, VirtualFile file) throws IOException {
+    private Result<HotfixResult> doHotfix(String pid, VirtualFile file, String hostName) throws IOException {
         HttpService httpService = HttpServiceFactory.getInstance();
         RequestBody requestBody = RequestBody.create(MediaType.get("multipart/form-data"), file.contentsToByteArray());
         MultipartBody.Part classFile = MultipartBody.Part.createFormData("file", file.getName(), requestBody);
         RequestBody targetPid = RequestBody.create(MediaType.parse("multipart/form-data"), pid);
-        Call<Result<HotfixResult>> hotReloadResultCall = httpService.reloadClass(classFile, targetPid);
+        Call<Result<HotfixResult>> hotReloadResultCall = httpService.reloadClass(classFile,
+                targetPid, hostName);
         return hotReloadResultCall.execute().body();
     }
 
