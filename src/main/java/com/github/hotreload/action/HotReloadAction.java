@@ -252,8 +252,10 @@ public class HotReloadAction extends AnAction {
         RequestBody requestBody = RequestBody.create(MediaType.get("multipart/form-data"), file.contentsToByteArray());
         MultipartBody.Part classFile = MultipartBody.Part.createFormData("file", file.getName(), requestBody);
         RequestBody targetPid = RequestBody.create(MediaType.parse("multipart/form-data"), pid);
+        String proxyServer = HttpServiceFactory.normalization(hostName);
+        RequestBody proxyServerPart = RequestBody.create(MediaType.parse("multipart/form-data"), proxyServer);
         Call<Result<HotfixResult>> hotReloadResultCall = httpService.reloadClass(classFile,
-                targetPid, hostName);
+                targetPid, proxyServerPart);
         return hotReloadResultCall.execute().body();
     }
 

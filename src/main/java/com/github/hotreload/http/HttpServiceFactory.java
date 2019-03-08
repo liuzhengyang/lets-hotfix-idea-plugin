@@ -6,6 +6,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
+
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -54,5 +56,16 @@ public class HttpServiceFactory {
 
     private static boolean hasProtocol(String url) {
         return url.startsWith(PROTOCOL_PREFIX);
+    }
+
+    public static String normalization(String hostName) {
+        if (StringUtils.isEmpty(hostName)) {
+            return hostName;
+        }
+        hostName = StringUtils.trim(hostName);
+        if (!hasProtocol(hostName)) {
+            hostName = DEFAULT_PROTOCOL + hostName;
+        }
+        return hostName;
     }
 }

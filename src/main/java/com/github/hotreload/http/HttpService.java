@@ -22,7 +22,7 @@ public interface HttpService {
     @Multipart
     @POST("/hotfix")
     Call<Result<HotfixResult>> reloadClass(@Part MultipartBody.Part file,
-            @Part("targetPid") RequestBody targetPid, @Query("proxyServer") String hostName);
+            @Part("targetPid") RequestBody targetPid, @Part("proxyServer") RequestBody hostName);
 
     @GET("/processList")
     Call<Result<List<JvmProcess>>> processList(@Query("proxyServer") String hostName);
