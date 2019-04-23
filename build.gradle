@@ -6,7 +6,7 @@ plugins {
 
 
 group 'com.github.lzy'
-version '0.0.2'
+version '0.0.4'
 
 sourceCompatibility = 1.8
 
@@ -32,9 +32,11 @@ intellij {
 
 patchPluginXml {
     changeNotes """
-        support proxy mode and keyword searching
+        support idea 2019 + 
+        fix some bug
       """
     sinceBuild("162.539.11")
+    untilBuild("210.*")
 }
 
 publishPlugin {
