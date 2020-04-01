@@ -6,7 +6,7 @@ plugins {
 
 
 group 'com.github.lzy'
-version '0.0.4'
+version '0.0.5'
 
 sourceCompatibility = 1.8
 
@@ -32,14 +32,13 @@ intellij {
 
 patchPluginXml {
     changeNotes """
-        support idea 2019 + 
-        fix some bug
+        Sort the host list.
+        对机器列表进行排序，来方便快速找到机器
       """
     sinceBuild("162.539.11")
     untilBuild("210.*")
 }
 
 publishPlugin {
-    username intellijPublishUsername
-    password intellijPublishPassword
+    token publishToken
 }

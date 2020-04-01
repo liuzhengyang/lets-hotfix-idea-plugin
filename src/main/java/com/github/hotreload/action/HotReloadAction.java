@@ -31,6 +31,7 @@ import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.CompilerManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -64,9 +65,11 @@ import retrofit2.Call;
 public class HotReloadAction extends AnAction {
 
     private static final String NEED_SELECT_PROCESS = "Need select process";
+    private Logger logger = Logger.getInstance(HotReloadAction.class);
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
+        logger.info("Reload action performed");
         VirtualFile virtualFile = e.getData(CommonDataKeys.VIRTUAL_FILE);
         Project project = e.getData(CommonDataKeys.PROJECT);
         if (project == null || virtualFile == null) {
@@ -111,6 +114,8 @@ public class HotReloadAction extends AnAction {
                             result[0] = findClassFile(outputRoots, psiFile);
                         }
                         reloadClassFile(project, result[0]);
+                    } else {
+                        log("Compile error " + errors);
                     }
                 });
             }
@@ -205,7 +210,7 @@ public class HotReloadAction extends AnAction {
                     notifySuccess();
                 } catch (Exception e) {
                     notifyFailed(e.getMessage());
-                    e.printStackTrace();
+                    log(e.getMessage(), e);
                 }
             }
         });
@@ -277,6 +282,10 @@ public class HotReloadAction extends AnAction {
     }
 
     private void log(String message) {
-        System.out.println(message);
+        logger.info(message);
+    }
+
+    private void log(String message, Throwable throwable) {
+        logger.info(message, throwable);
     }
 }

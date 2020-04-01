@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -59,7 +60,10 @@ public class ReloadUtil {
         HttpService httpService = HttpServiceFactory.getInstance();
         try {
             Result<List<String>> result = httpService.hostList().execute().body();
-            return ofNullable(result).map(Result::getData).orElse(emptyList());
+            return ofNullable(result)
+                    .map(Result::getData)
+                    .map(list -> list.stream().sorted().collect(Collectors.toList()))
+                    .orElse(emptyList());
         } catch (IOException e) {
             e.printStackTrace();
             return emptyList();
