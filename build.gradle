@@ -6,7 +6,7 @@ plugins {
 
 
 group 'com.github.lzy'
-version '0.0.5'
+version '0.0.6'
 
 sourceCompatibility = 1.8
 
@@ -27,7 +27,7 @@ dependencies {
 }
 
 intellij {
-    version '2018.3.4'
+    plugins 'java'
 }
 
 patchPluginXml {
@@ -40,5 +40,5 @@ patchPluginXml {
 }
 
 publishPlugin {
-    token publishToken
+    token intellijPublishToken
 }
