@@ -37,11 +37,18 @@
 
     <actions>
         <action id="hotReload" class="com.github.hotreload.action.HotReloadAction" text="Hot Reload"
-                description="Hot Reload">
+                description="Hot reload">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <keyboard-shortcut first-keystroke="control shift l" keymap="$default"/>
             <keyboard-shortcut first-keystroke="control shift l" keymap="Mac OS X 10.5+"/>
             <keyboard-shortcut first-keystroke="control shift l" keymap="Mac OS X"/>
+        </action>
+        <action id="hotReloadBySourceCode" class="com.github.hotreload.action.HotReloadSourceAction" text="Hot Reload Source"
+                description="Hot reload by source">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+            <keyboard-shortcut first-keystroke="control shift p" keymap="$default"/>
+            <keyboard-shortcut first-keystroke="control shift p" keymap="Mac OS X 10.5+"/>
+            <keyboard-shortcut first-keystroke="control shift p" keymap="Mac OS X"/>
         </action>
     </actions>
 </idea-plugin>

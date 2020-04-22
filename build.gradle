@@ -6,7 +6,7 @@ plugins {
 
 
 group 'com.github.lzy'
-version '0.0.6'
+version '0.0.7'
 
 sourceCompatibility = 1.8
 
@@ -32,8 +32,8 @@ intellij {
 
 patchPluginXml {
     changeNotes """
-        Sort the host list.
-        对机器列表进行排序，来方便快速找到机器
+        Add hotreload support by uploading java source file
+        支持上传Java源代码到测试进程内存编译热更新了，不会再被本地编译问题困扰啦
       """
     sinceBuild("162.539.11")
     untilBuild("210.*")
