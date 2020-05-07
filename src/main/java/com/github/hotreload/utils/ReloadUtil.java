@@ -22,6 +22,7 @@ import com.github.hotreload.model.JvmProcess;
 import com.github.hotreload.model.Result;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -97,7 +98,7 @@ public class ReloadUtil {
     }
 
     public static void notify(String title, String message, NotificationType type) {
-        Notification notification = new Notification("hotfix", title, message, type);
+        Notification notification = new Notification("hotfix", title, Strings.nullToEmpty(message), type);
         Notifications.Bus.notify(notification);
         Optional.ofNullable(notification.getBalloon()).ifPresent(Balloon::hide);
     }

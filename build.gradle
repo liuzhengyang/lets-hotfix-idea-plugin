@@ -6,7 +6,7 @@ plugins {
 
 
 group 'com.github.lzy'
-version '0.0.7'
+version '0.0.9'
 
 sourceCompatibility = 1.8
 
