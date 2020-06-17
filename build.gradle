@@ -6,7 +6,7 @@ plugins {
 
 
 group 'com.github.lzy'
-version '0.0.9'
+version '0.0.10'
 
 sourceCompatibility = 1.8
 
@@ -32,8 +32,8 @@ intellij {
 
 patchPluginXml {
     changeNotes """
-        Add hotreload support by uploading java source file
-        支持上传Java源代码到测试进程内存编译热更新了，不会再被本地编译问题困扰啦
+        Add hostname keyword filter
+        增加了hostname的搜索框，减少hostname太多的烦恼
       """
     sinceBuild("162.539.11")
     untilBuild("210.*")
