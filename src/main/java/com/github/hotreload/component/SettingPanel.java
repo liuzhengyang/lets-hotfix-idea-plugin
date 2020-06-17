@@ -17,16 +17,10 @@ import java.awt.event.ItemEvent;
 import java.util.List;
 import java.util.Objects;
 
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.github.hotreload.config.ApplicationConfig;
@@ -43,9 +37,11 @@ public class SettingPanel {
     private JTextField keywordFiled;
     private JComboBox<JvmProcess> processBox;
     private JPanel rootPanel;
+    private JTextField hostNameKeywordField;
 
     private List<JvmProcess> currentProcessList;
     private JvmProcess selectedProcess;
+    private List<String> hostList;
 
     public JTextField getServerField() {
         return serverField;
@@ -71,6 +67,7 @@ public class SettingPanel {
         String serverUrl = applicationConfig.getServer();
         serverField.setText(serverUrl);
         keywordFiled.setText(applicationConfig.getKeywordText());
+        hostNameKeywordField.setText(applicationConfig.getHostNameKeyword());
         if (StringUtils.isBlank(serverUrl)) {
             return;
         }
@@ -85,6 +82,7 @@ public class SettingPanel {
         if (processBox.getSelectedItem() != null) {
             applicationConfig.setSelectedProcess((JvmProcess) processBox.getSelectedItem());
         }
+        applicationConfig.setHostNameKeyword(hostNameKeywordField.getText());
         applicationConfig.setKeywords(splitKeywordsText(keywordFiled.getText()));
         if (hostNameBox.getSelectedItem() != null) {
             applicationConfig.setSelectedHostName(hostNameBox.getSelectedItem().toString());
@@ -106,6 +104,7 @@ public class SettingPanel {
     public void initComponent() {
         addServerFocusListener();
         addHostNameChangeListener();
+        addHostNameKeywordChangeListener();
         addKeywordChangeListener();
         addHorizontalScrollForProcessBox();
     }
@@ -149,6 +148,25 @@ public class SettingPanel {
         });
     }
 
+    private void addHostNameKeywordChangeListener() {
+        hostNameKeywordField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changeShownHostList();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changeShownHostList();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changeShownHostList();
+            }
+        });
+    }
+
     private void addKeywordChangeListener() {
         keywordFiled.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -176,6 +194,11 @@ public class SettingPanel {
         List<String> hosts = getHostList();
         if (isEmpty(hosts)) {
             hosts = singletonList(DEFAULT_HOST);
+        }
+        hostList = hosts;
+        String hostNameKeyword = hostNameKeywordField.getText();
+        if (StringUtils.isNotBlank(hostNameKeyword)) {
+            hosts = ReloadUtil.filterHost(hosts, hostNameKeyword);
         }
         hostNameBox.removeAllItems();
         hosts.forEach(hostNameBox::addItem);
@@ -211,6 +234,23 @@ public class SettingPanel {
         }
         JTextField textField = (JTextField) processBox.getEditor().getEditorComponent();
         textField.setCaretPosition(0);
+    }
+
+    private void changeShownHostList() {
+        String hostNameKeyWordText = hostNameKeywordField.getText();
+
+        List<String> shownHostList = hostList;
+        if (StringUtils.isNotBlank(hostNameKeyWordText)) {
+            shownHostList = ReloadUtil.filterHost(shownHostList, hostNameKeyWordText);
+        }
+        if (shownHostList.size() > 0) {
+            hostNameBox.removeAllItems();
+            shownHostList.forEach(hostNameBox::addItem);
+            hostNameBox.showPopup();
+        } else {
+            hostNameBox.removeAllItems();
+            hostNameBox.hidePopup();
+        }
     }
 
     private void changeShownProcessList() {

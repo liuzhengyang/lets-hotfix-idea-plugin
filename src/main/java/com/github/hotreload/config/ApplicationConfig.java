@@ -15,6 +15,7 @@ import lombok.Data;
 @Data
 public class ApplicationConfig {
     private String server;
+    private String hostNameKeyword;
     private String selectedHostName;
     private List<String> keywords;
     private JvmProcess selectedProcess;

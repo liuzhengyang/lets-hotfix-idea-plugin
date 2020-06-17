@@ -49,7 +49,7 @@ import retrofit2.Call;
 public class HotReloadSourceAction extends AnAction {
 
     private static final String NEED_SELECT_PROCESS = "Need select process";
-    private Logger logger = Logger.getInstance(HotReloadSourceAction.class);
+    private final Logger logger = Logger.getInstance(HotReloadSourceAction.class);
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {

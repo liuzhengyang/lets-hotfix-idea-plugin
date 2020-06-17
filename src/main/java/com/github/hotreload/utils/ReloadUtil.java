@@ -49,6 +49,15 @@ public class ReloadUtil {
                 .collect(toList());
     }
 
+    public static List<String> filterHost(List<String> hostList, String keyword) {
+        if (isEmpty(hostList) || StringUtils.isBlank(keyword)) {
+            return emptyList();
+        }
+        return hostList.stream()
+                .filter(host -> StringUtils.contains(host, keyword))
+                .collect(toList());
+    }
+
     public static String joinKeywords(Collection<String> keywords) {
         return KEYWORD_JOINER.join(keywords);
     }
