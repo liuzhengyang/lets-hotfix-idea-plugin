@@ -22,7 +22,7 @@
         </ul>
     ]]></change-notes>
 
-    <version>0.0.2</version>
+    <version>0.0.11</version>
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable groupId="tools"

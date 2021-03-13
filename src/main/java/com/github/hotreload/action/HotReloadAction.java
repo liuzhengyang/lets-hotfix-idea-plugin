@@ -107,12 +107,9 @@ public class HotReloadAction extends AnAction {
                 log("Files " + Arrays.toString(files));
                 compilerManager.compile(files, (aborted, errors, warnings, compileContext) -> {
                     if (errors == 0) {
-                        VirtualFile[] outputRoots =
-                                compilerModuleExtension.getOutputRoots(true);
+                        VirtualFile[] outputRoots = compilerModuleExtension.getOutputRoots(true);
                         log("Output Directories " + Arrays.toString(outputRoots));
-                        if (outputRoots != null) {
-                            result[0] = findClassFile(outputRoots, psiFile);
-                        }
+                        result[0] = findClassFile(outputRoots, psiFile);
                         reloadClassFile(project, result[0]);
                     } else {
                         log("Compile error " + errors);
